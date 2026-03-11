@@ -1,0 +1,159 @@
+#root {
+  max-width: 1280px;
+  margin: 0 auto;
+  padding: 2rem;
+  text-align: center;
+}
+
+.logo {
+  height: 6em;
+  padding: 1.5em;
+  will-change: filter;
+  transition: filter 300ms;
+}
+.logo:hover {
+  filter: drop-shadow(0 0 2em #646cffaa);
+}
+.logo.react:hover {
+  filter: drop-shadow(0 0 2em #61dafbaa);
+}
+
+@keyframes logo-spin {
+  from {
+    transform: rotate(0deg);
+  }
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  a:nth-of-type(2) .logo {
+    animation: logo-spin infinite 20s linear;
+  }
+}
+
+.card {
+  padding: 2em;
+}
+
+.read-the-docs {
+  color: #888;
+}
+/* --- Global Reset & Scrollbar --- */
+* { 
+  box-sizing: border-box; 
+  margin: 0; 
+  padding: 0; 
+}
+
+::-webkit-scrollbar { 
+  width: 5px; 
+}
+
+::-webkit-scrollbar-thumb { 
+  background: rgba(16, 185, 129, 0.4); 
+  border-radius: 10px; 
+}
+
+/* --- Animations --- */
+@keyframes bounce { 
+  0%, 80%, 100% { transform: translateY(0); } 
+  40% { transform: translateY(-8px); } 
+}
+
+@keyframes slideIn { 
+  from { opacity: 0; transform: translateY(15px); } 
+  to { opacity: 1; transform: translateY(0); } 
+}
+
+@keyframes float { 
+  0%, 100% { transform: translateY(0); } 
+  50% { transform: translateY(-6px); } 
+}
+
+/* --- Responsive Component Styles --- */
+.app-container {
+  width: 100%;
+  max-width: 800px; /* Comfortably wide on laptop */
+  padding: 15px;
+  display: flex;
+  flex-direction: column;
+  height: 100vh;
+}
+
+.chat-area {
+  flex: 1;
+  overflow-y: auto;
+  padding: 10px 5px;
+  margin-top: 10px;
+  /* Hide scrollbar for cleaner look on mobile, show on hover */
+  scrollbar-width: thin;
+}
+
+/* --- Mobile Specific Overrides (Phones) --- */
+@media (max-width: 600px) {
+  .app-container {
+    padding: 10px;
+    height: 100dvh; /* Use dynamic viewport height for mobile browsers */
+  }
+
+  h2 { font-size: 18px !important; }
+  
+  .suggestion-chip {
+    padding: 10px 18px !important; /* Larger touch targets */
+    font-size: 13px !important;
+  }
+
+  .message-bubble {
+    max-width: 85% !important; /* More width on small screens */
+    font-size: 14px !important;
+  }
+  
+  .input-container {
+    padding: 10px !important;
+    border-radius: 15px !important;
+  }
+}
+
+/* --- Hover & Interaction States --- */
+.send-btn {
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.send-btn:hover:not(:disabled) {
+  transform: scale(1.08) rotate(-5deg);
+  filter: brightness(1.1);
+}
+
+.send-btn:active {
+  transform: scale(0.95);
+}
+
+.suggestion-chip {
+  transition: all 0.2s ease;
+  border: 1px solid rgba(16, 185, 129, 0.3);
+}
+
+.suggestion-chip:hover {
+  background: rgba(16, 185, 129, 0.2) !important;
+  border-color: rgba(16, 185, 129, 0.6) !important;
+  transform: translateY(-2px);
+  color: white !important;
+}
+
+.lang-tab {
+  transition: all 0.3s ease;
+}
+
+.lang-tab:active {
+  transform: scale(0.98);
+}
+
+/* --- Glassmorphism Elements --- */
+.glass-panel {
+  backdrop-filter: blur(16px) saturate(180%);
+  -webkit-backdrop-filter: blur(16px) saturate(180%);
+  background-color: rgba(15, 23, 42, 0.75);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+}
