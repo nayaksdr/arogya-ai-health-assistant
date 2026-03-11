@@ -86,8 +86,53 @@ export default function HealthAssistant() {
   const [loading, setLoading] = useState(false);
   const [activeLang, setActiveLang] = useState("en");
   const [serverStatus, setServerStatus] = useState("checking");
+
+  // ✅ MOVED INSIDE COMPONENT — was incorrectly placed outside before
+  const [isListening, setIsListening] = useState(false);
+  const recognitionRef = useRef(null);
+
   const bottomRef = useRef(null);
   const inputRef = useRef(null);
+
+  // ✅ MOVED INSIDE COMPONENT
+  const getLangCode = () => {
+    if (activeLang === "hi") return "hi-IN";
+    if (activeLang === "mr") return "mr-IN";
+    return "en-US";
+  };
+
+  // ✅ MOVED INSIDE COMPONENT
+  const toggleVoiceInput = () => {
+    const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+
+    if (!SpeechRecognition) {
+      alert("Voice input not supported in this browser. Try Chrome.");
+      return;
+    }
+
+    if (isListening) {
+      recognitionRef.current?.stop();
+      setIsListening(false);
+      return;
+    }
+
+    const recognition = new SpeechRecognition();
+    recognitionRef.current = recognition;
+    recognition.lang = getLangCode();
+    recognition.interimResults = false;
+    recognition.maxAlternatives = 1;
+
+    recognition.onstart = () => setIsListening(true);
+    recognition.onend = () => setIsListening(false);
+    recognition.onerror = () => setIsListening(false);
+
+    recognition.onresult = (e) => {
+      const transcript = e.results[0][0].transcript;
+      setInput((prev) => (prev ? prev + " " + transcript : transcript));
+    };
+
+    recognition.start();
+  };
 
   useEffect(() => {
     fetch(`${BACKEND_URL}/health`)
@@ -151,6 +196,7 @@ export default function HealthAssistant() {
         @keyframes bounce { 0%,80%,100%{transform:translateY(0)} 40%{transform:translateY(-8px)} }
         @keyframes slideIn { from{opacity:0;transform:translateY(10px)} to{opacity:1;transform:translateY(0)} }
         @keyframes float { 0%,100%{transform:translateY(0)} 50%{transform:translateY(-6px)} }
+        @keyframes pulse { 0%,100%{transform:scale(1)} 50%{transform:scale(1.08)} }
         * { box-sizing: border-box; margin: 0; padding: 0; }
         ::-webkit-scrollbar { width: 4px; }
         ::-webkit-scrollbar-thumb { background: rgba(16,185,129,0.3); border-radius: 4px; }
@@ -219,15 +265,50 @@ export default function HealthAssistant() {
       {/* Input Area */}
       <div style={{ width: "100%", maxWidth: 700, padding: "0 20px 20px" }}>
         <div style={{ background: "rgba(255,255,255,0.06)", border: `1px solid ${serverStatus === "offline" ? "rgba(239,68,68,0.3)" : "rgba(16,185,129,0.3)"}`, borderRadius: 20, padding: "12px 12px 12px 18px", display: "flex", gap: 10, alignItems: "flex-end", backdropFilter: "blur(20px)" }}>
-          <textarea ref={inputRef} value={input} onChange={(e) => setInput(e.target.value)} onKeyDown={handleKey}
+
+          <textarea
+            ref={inputRef} value={input}
+            onChange={(e) => setInput(e.target.value)}
+            onKeyDown={handleKey}
             placeholder={activeLang === "hi" ? "अपने लक्षण बताएं..." : activeLang === "mr" ? "तुमची लक्षणे सांगा..." : "Describe your symptoms..."}
-            rows={1} style={{ flex: 1, background: "transparent", border: "none", color: "#fff", fontSize: 14.5, lineHeight: 1.6, resize: "none", minHeight: 24, maxHeight: 100, fontFamily: "inherit", overflowY: "auto" }}
-            onInput={(e) => { e.target.style.height = "auto"; e.target.style.height = Math.min(e.target.scrollHeight, 100) + "px"; }} />
-          <button className="send-btn" onClick={() => sendMessage(input)} disabled={loading || !input.trim()} style={{ width: 44, height: 44, borderRadius: 14, border: "none", background: loading || !input.trim() ? "rgba(16,185,129,0.3)" : "linear-gradient(135deg, #10b981, #059669)", color: "#fff", fontSize: 20, cursor: loading || !input.trim() ? "not-allowed" : "pointer", display: "flex", alignItems: "center", justifyContent: "center", transition: "all 0.2s", flexShrink: 0 }}>
+            rows={1}
+            style={{ flex: 1, background: "transparent", border: "none", color: "#fff", fontSize: 14.5, lineHeight: 1.6, resize: "none", minHeight: 24, maxHeight: 100, fontFamily: "inherit", overflowY: "auto" }}
+            onInput={(e) => { e.target.style.height = "auto"; e.target.style.height = Math.min(e.target.scrollHeight, 100) + "px"; }}
+          />
+
+          {/* 🎙️ MIC BUTTON */}
+          <button
+            onClick={toggleVoiceInput}
+            title={activeLang === "hi" ? "बोलें" : activeLang === "mr" ? "बोला" : "Speak"}
+            style={{
+              width: 44, height: 44, borderRadius: 14, border: "none", flexShrink: 0,
+              background: isListening
+                ? "linear-gradient(135deg, #ef4444, #dc2626)"
+                : "rgba(255,255,255,0.1)",
+              color: "#fff", fontSize: 18, cursor: "pointer",
+              display: "flex", alignItems: "center", justifyContent: "center",
+              transition: "all 0.2s",
+              boxShadow: isListening ? "0 0 12px rgba(239,68,68,0.6)" : "none",
+              animation: isListening ? "pulse 1.2s infinite" : "none",
+            }}
+          >
+            {isListening ? "🔴" : "🎙️"}
+          </button>
+
+          {/* ➤ SEND BUTTON */}
+          <button
+            className="send-btn"
+            onClick={() => sendMessage(input)}
+            disabled={loading || !input.trim()}
+            style={{ width: 44, height: 44, borderRadius: 14, border: "none", background: loading || !input.trim() ? "rgba(16,185,129,0.3)" : "linear-gradient(135deg, #10b981, #059669)", color: "#fff", fontSize: 20, cursor: loading || !input.trim() ? "not-allowed" : "pointer", display: "flex", alignItems: "center", justifyContent: "center", transition: "all 0.2s", flexShrink: 0 }}
+          >
             {loading ? "⏳" : "➤"}
           </button>
         </div>
-        <div style={{ textAlign: "center", marginTop: 8, fontSize: 11, color: "rgba(255,255,255,0.25)" }}>⚕️ For emergencies, always call 112 or visit nearest hospital</div>
+
+        <div style={{ textAlign: "center", marginTop: 8, fontSize: 11, color: "rgba(255,255,255,0.25)" }}>
+          ⚕️ For emergencies, always call 112 or visit nearest hospital
+        </div>
       </div>
     </div>
   );
